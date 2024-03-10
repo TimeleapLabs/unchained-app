@@ -1,8 +1,8 @@
-import { config as baseConfig } from '@tamagui/config/v3'
-import { createFont, createTamagui, createTokens } from 'tamagui'
+import { config as baseConfig } from "@tamagui/config/v3";
+import { createFont, createTamagui, createTokens } from "tamagui";
 
 const poppinsSemiBoldFont = createFont({
-  family: 'PoppinsSemiBold',
+  family: "PoppinsSemiBold",
   size: {
     1: 16,
     2: 20,
@@ -11,10 +11,10 @@ const poppinsSemiBoldFont = createFont({
     5: 32,
     6: 40,
   },
-})
+});
 
 const poppinsBoldFont = createFont({
-  family: 'PoppinsBold',
+  family: "PoppinsBold",
   size: {
     1: 16,
     2: 20,
@@ -23,40 +23,41 @@ const poppinsBoldFont = createFont({
     5: 32,
     6: 40,
   },
-})
+});
 
 const rubikLightFont = createFont({
-  family: 'RubikLight',
+  family: "RubikLight",
   size: {
     1: 15,
     2: 16,
     3: 20,
     4: 30,
   },
-})
+});
 
 const rubikRegularFont = createFont({
-  family: 'RubikRegular',
+  family: "RubikRegular",
   size: {
     1: 15,
     2: 16,
     3: 20,
     4: 30,
   },
-})
+});
 
 export const tokens = createTokens({
   ...baseConfig.tokens,
   color: {
-    black: 'rgba(0, 0, 0, 0.5)',
-    white: 'rgba(255, 255, 255)',
-    textPrimary: 'rgb(35, 35, 35)',
-    textSecondary: 'rgb(120, 132, 135)',
-    buttonBg: 'rgba(255, 255, 255, 0.95)',
-    buttonText: 'rgba(0, 0, 0, 0.85)',
-    buttonBorder: 'rgba(255, 255, 255, 0.12)',
+    ...baseConfig.tokens.color,
+    black: "rgba(0, 0, 0, 0.5)",
+    white: "rgba(255, 255, 255)",
+    textPrimary: "rgb(35, 35, 35)",
+    textSecondary: "rgb(120, 132, 135)",
+    buttonBg: "rgba(255, 255, 255, 0.95)",
+    buttonText: "rgba(0, 0, 0, 0.85)",
+    buttonBorder: "rgba(255, 255, 255, 0.12)",
   },
-})
+});
 
 export const config = createTamagui({
   ...baseConfig,
@@ -67,12 +68,12 @@ export const config = createTamagui({
     bodySecondary: rubikLightFont,
   },
   tokens,
-})
+});
 
-export default config
+export default config;
 
-export type Conf = typeof config
+export type Conf = typeof config;
 
-declare module 'tamagui' {
+declare module "tamagui" {
   interface TamaguiCustomConfig extends Conf {}
 }
