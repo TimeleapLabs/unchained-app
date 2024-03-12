@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
+import SignaturesProvider from "../lib/signatures-provider";
 import UserProvider from "../lib/user-provider";
 import { config } from "../tamagui.config";
 export { ErrorBoundary } from "expo-router";
@@ -50,13 +51,21 @@ function RootLayoutNav() {
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
           <UserProvider>
-            <Stack>
-              <Stack.Screen
-                name="onboarding"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen name="login" options={{ headerShown: false }} />
-            </Stack>
+            <SignaturesProvider>
+              <Stack>
+                <Stack.Screen
+                  name="onboarding"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="login" options={{ headerShown: false }} />
+                <Stack.Screen name="scan" options={{ title: "New scan" }} />
+                <Stack.Screen name="signing" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="signature"
+                  options={{ title: "Signature", presentation: "modal" }}
+                />
+              </Stack>
+            </SignaturesProvider>
           </UserProvider>
         </ThemeProvider>
       </TamaguiProvider>
