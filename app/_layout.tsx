@@ -1,3 +1,4 @@
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import {
   DarkTheme,
   DefaultTheme,
@@ -19,6 +20,11 @@ export const unstable_settings = {
 };
 
 SplashScreen.preventAutoHideAsync();
+
+const client = new ApolloClient({
+  uri: "https://shinobi.brokers.kenshi.io/gql/query",
+  cache: new InMemoryCache(),
+});
 
 export default function RootLayout() {
   const [fontLoaded, fontError] = useFonts({
@@ -50,23 +56,28 @@ function RootLayoutNav() {
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
-          <UserProvider>
-            <SignaturesProvider>
-              <Stack>
-                <Stack.Screen
-                  name="onboarding"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen name="login" options={{ headerShown: false }} />
-                <Stack.Screen name="scan" options={{ title: "New scan" }} />
-                <Stack.Screen name="signing" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="signature"
-                  options={{ title: "Signature", presentation: "modal" }}
-                />
-              </Stack>
-            </SignaturesProvider>
-          </UserProvider>
+          <ApolloProvider client={client}>
+            <UserProvider>
+              <SignaturesProvider>
+                <Stack>
+                  <Stack.Screen
+                    name="onboarding"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen name="login" options={{ headerShown: false }} />
+                  <Stack.Screen name="scan" options={{ title: "New scan" }} />
+                  <Stack.Screen
+                    name="signing"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="signature"
+                    options={{ title: "Signature", presentation: "modal" }}
+                  />
+                </Stack>
+              </SignaturesProvider>
+            </UserProvider>
+          </ApolloProvider>
         </ThemeProvider>
       </TamaguiProvider>
     </SafeAreaProvider>

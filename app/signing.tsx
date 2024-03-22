@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Button, Spinner, Text, View, XStack, YStack } from "tamagui";
+import { Button, H2, Spinner, Text, View, XStack, YStack } from "tamagui";
 import InlineField from "../components/InlineField";
 import { useSignatures } from "../lib/signatures-provider";
 import { Reject, RejectReasons, toHex } from "../lib/unchained-client";
@@ -48,15 +48,12 @@ export default function SigningScreen() {
     return (
       <View flex={1} justifyContent="center">
         <YStack paddingHorizontal="$4" width="100%" gap="$2">
-          <Text fontSize="$4" marginBottom="$2" fontFamily="$subHeading">
+          <H2 size="$3" marginBottom="$2" fontFamily="$subHeading">
             Do you want to sign this document?
-          </Text>
+          </H2>
           <InlineField label="Topic" text={toHex(currentDocument.Topic)} />
           <InlineField label="Hash" text={toHex(currentDocument.Hash)} />
-          <InlineField
-            label="Date"
-            text={new Date(currentDocument.Timestamp).toDateString()}
-          />
+          <InlineField label="Ts" text={String(currentDocument.Timestamp)} />
           <InlineField
             label="Match"
             text={currentDocument.Correct ? "Yes" : "No"}
@@ -64,8 +61,6 @@ export default function SigningScreen() {
           <XStack gap="$4" width="100%" marginTop="$4">
             <Button
               variant="outlined"
-              backgroundColor={signing ? "$gray4" : "$green8"}
-              color="$buttonText"
               borderRadius="$10"
               size="$2"
               padding="$2"
@@ -80,7 +75,6 @@ export default function SigningScreen() {
             <Button
               variant="outlined"
               borderRadius="$10"
-              backgroundColor={signing ? "$gray4" : "$red8"}
               size="$2"
               padding="$2"
               height="$4"
@@ -95,6 +89,11 @@ export default function SigningScreen() {
             {error && (
               <Text fontSize="$2" color="$red10">
                 Error: {error}
+              </Text>
+            )}
+            {signed && (
+              <Text fontSize="$2" color="$green10">
+                Signed successfully
               </Text>
             )}
           </View>
