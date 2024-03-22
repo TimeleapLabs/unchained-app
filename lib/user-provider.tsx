@@ -2,6 +2,10 @@ import "react-native-get-random-values";
 
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect } from "react";
+import { generateSecureRandom } from "./unchained-client";
+
+const PRIVATE_KEY_STORAGE_KEY = "pk";
+const PIN_STORAGE_KEY = "pin";
 
 interface WalletProviderProps {
   children: React.ReactNode;
@@ -41,11 +45,11 @@ const UserProvider = ({ children }: WalletProviderProps) => {
 
   useEffect(() => {
     const loadWallet = async () => {
-      // await SecureStore.deleteItemAsync("wallet");
-      // await SecureStore.deleteItemAsync("pin");
+      // await SecureStore.deleteItemAsync(PRIVATE_KEY_STORAGE_KEY);
+      // await SecureStore.deleteItemAsync(PIN_STORAGE_KEY);
       setIsLoading(true);
       try {
-        const wallet = await SecureStore.getItemAsync("wallet");
+        const wallet = await SecureStore.getItemAsync(PRIVATE_KEY_STORAGE_KEY);
         if (wallet) {
           setPrivateKey(wallet);
         }
@@ -58,14 +62,14 @@ const UserProvider = ({ children }: WalletProviderProps) => {
   }, []);
 
   const initializeWallet = () => {
-    const newPrivateKey = Math.random().toString(36).substring(7);
-    SecureStore.setItem("wallet", newPrivateKey);
-    SecureStore.setItem("pin", pin);
+    const newPrivateKey = generateSecureRandom();
+    SecureStore.setItem(PRIVATE_KEY_STORAGE_KEY, newPrivateKey);
+    SecureStore.setItem(PIN_STORAGE_KEY, pin);
     setPrivateKey(newPrivateKey);
   };
 
   const loginUser = async (biometrics = false) => {
-    const savedPin = await SecureStore.getItemAsync("pin");
+    const savedPin = await SecureStore.getItemAsync(PIN_STORAGE_KEY);
     if (savedPin) {
       const isValidPin = savedPin === pin || biometrics;
 
@@ -78,8 +82,8 @@ const UserProvider = ({ children }: WalletProviderProps) => {
   };
 
   const deleteWallet = async () => {
-    await SecureStore.deleteItemAsync("wallet");
-    await SecureStore.deleteItemAsync("pin");
+    await SecureStore.deleteItemAsync(PRIVATE_KEY_STORAGE_KEY);
+    await SecureStore.deleteItemAsync(PIN_STORAGE_KEY);
     setPrivateKey(null);
     setIsLoggedIn(false);
     setPin("");

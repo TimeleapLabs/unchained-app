@@ -2,6 +2,7 @@ import { Link, Redirect, Stack, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H2, ListItem, ScrollView, Text, YStack } from "tamagui";
 import { useSignatures } from "../lib/signatures-provider";
+import { toHex } from "../lib/unchained-client";
 import { useUser } from "../lib/user-provider";
 
 export default function HomeScreen() {
@@ -10,8 +11,8 @@ export default function HomeScreen() {
   const { signatures } = useSignatures();
   const router = useRouter();
 
-  const handleItemPress = (id: string) => {
-    router.push(`/signature/${id}`);
+  const handleItemPress = (timestamp: number) => {
+    router.push(`/signature/${timestamp}`);
   };
 
   if (!isWalletInitialized) {
@@ -59,13 +60,13 @@ export default function HomeScreen() {
             ) : (
               signatures.map((signature) => (
                 <ListItem
-                  key={signature.id}
+                  key={signature.timestamp}
                   onPress={() => {
-                    handleItemPress(signature.id);
+                    handleItemPress(signature.timestamp);
                   }}
                 >
-                  <Text fontSize="$2">
-                    {signature.document.metric.document}
+                  <Text fontSize="$2" numberOfLines={1} textOverflow="ellipsis">
+                    {toHex(signature.document.Topic)}
                   </Text>
                 </ListItem>
               ))

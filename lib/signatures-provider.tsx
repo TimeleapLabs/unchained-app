@@ -1,69 +1,46 @@
 import "react-native-get-random-values";
 
 import React, { createContext, useContext, useEffect } from "react";
+import { Correctness, startClient } from "./unchained-client";
 import { useUser } from "./user-provider";
 
 interface SignaturesProviderProps {
   children: React.ReactNode;
 }
 
-export interface Document {
-  metric: {
-    document: string;
-    timestamp: number;
-  };
-  value: {
-    match: boolean;
-  };
-}
-
 interface Signature {
-  id: string;
-  document: Document;
-  signature: string;
+  document: Correctness;
   timestamp: number;
-  match: boolean;
 }
 
 interface SignaturesContext {
   signatures: Signature[];
-  setDocumentForSigning: (document: Document) => void;
-  currentDocument: Document | null;
-  signCurrentDocument: () => void;
-  getSignature: (id: string) => Signature | undefined;
+  setDocumentForSigning: (
+    document: Correctness | null,
+    rawDocument: Uint8Array | null
+  ) => void;
+  currentDocument: Correctness | null;
+  rawDocument: Uint8Array | null;
+  signCurrentDocument: () => Promise<void>;
+  getSignature: (timestamp: number) => Signature | undefined;
 }
 
 const SignaturesContext = createContext<SignaturesContext>({
   signatures: [],
   setDocumentForSigning: () => {},
   currentDocument: null,
-  signCurrentDocument: () => {},
+  rawDocument: null,
+  signCurrentDocument: () => Promise.resolve(),
   getSignature: () => undefined,
 });
 
 const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
-  const [signatures, setSignatures] = React.useState<Signature[]>([
-    {
-      id: "1",
-      document: {
-        metric: {
-          document: "Document 1",
-          timestamp: Date.now(),
-        },
-        value: {
-          match: true,
-        },
-      },
-      signature: "signature1",
-      timestamp: Date.now(),
-      match: true,
-    },
-  ]);
+  const [signatures, setSignatures] = React.useState<Signature[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const [currentDocument, setCurrentDocument] = React.useState<Document | null>(
-    null
-  );
-  const { isLoggedIn } = useUser();
+  const [currentDocument, setCurrentDocument] =
+    React.useState<Correctness | null>(null);
+  const [rawDocument, setRawDocument] = React.useState<Uint8Array | null>(null);
+  const { isLoggedIn, privateKey } = useUser();
 
   useEffect(() => {
     const loadSignatures = async () => {
@@ -80,26 +57,29 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
     }
   }, [isLoggedIn]);
 
-  const setDocumentForSigning = (document: Document) => {
+  const setDocumentForSigning = (
+    document: Correctness | null,
+    rawDocument: Uint8Array | null
+  ) => {
     setCurrentDocument(document);
+    setRawDocument(rawDocument);
   };
 
-  const signCurrentDocument = () => {
-    if (currentDocument) {
+  const signCurrentDocument = async () => {
+    console.log("Signing document", currentDocument, privateKey);
+    if (rawDocument && currentDocument && privateKey) {
+      await startClient(rawDocument, currentDocument, privateKey);
       const newSignature: Signature = {
-        id: Math.random().toString(36).substring(7),
         document: currentDocument,
-        signature: Math.random().toString(36).substring(7),
         timestamp: Date.now(),
-        match: currentDocument.value.match,
       };
 
       setSignatures([...signatures, newSignature]);
     }
   };
 
-  const getSignature = (id: string) => {
-    return signatures.find((signature) => signature.id === id);
+  const getSignature = (timestamp: number) => {
+    return signatures.find((signature) => signature.timestamp === timestamp);
   };
 
   return (
@@ -108,6 +88,7 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
         signatures,
         setDocumentForSigning,
         currentDocument,
+        rawDocument,
         signCurrentDocument,
         getSignature,
       }}
