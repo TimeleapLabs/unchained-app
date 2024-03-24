@@ -87,6 +87,9 @@ const UserProvider = ({ children }: WalletProviderProps) => {
   };
 
   const deleteWallet = async () => {
+    if (!__DEV__) {
+      return;
+    }
     await SecureStore.deleteItemAsync(PRIVATE_KEY_STORAGE_KEY);
     await SecureStore.deleteItemAsync(PIN_STORAGE_KEY);
     setPrivateKey(null);

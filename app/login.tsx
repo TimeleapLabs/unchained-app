@@ -1,6 +1,8 @@
 // import * as LocalAuthentication from "expo-local-authentication";
-import { Redirect, usePathname } from "expo-router";
+import * as LocalAuthentication from "expo-local-authentication";
+import { Redirect, usePathname, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import Toast from "react-native-root-toast";
 import { Button, Image, Label, ScrollView, Text, View } from "tamagui";
 import PinInput from "../components/PinInput";
 import { useUser } from "../lib/user-provider";
@@ -17,6 +19,7 @@ export default function Password() {
     deleteWallet,
   } = useUser();
   const pathname = usePathname();
+  const router = useRouter();
 
   const handlePinInput = (pin: string) => {
     setPin(pin);
@@ -41,29 +44,29 @@ export default function Password() {
     }
   }, [pin]);
 
-  // useEffect(() => {
-  //   async function handleAuthentication() {
-  //     const hasHardware = await LocalAuthentication.hasHardwareAsync();
-  //     const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-  //     if (hasHardware && isEnrolled) {
-  //       const result = await LocalAuthentication.authenticateAsync({
-  //         promptMessage: "Authenticate",
-  //       });
-  //       if (result.success) {
-  //         await loginUser(true);
-  //         router.replace("/");
-  //       } else {
-  //         Toast.show("Login failed.", {
-  //           duration: Toast.durations.LONG,
-  //         });
-  //       }
-  //     }
-  //   }
+  useEffect(() => {
+    async function handleAuthentication() {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      if (hasHardware && isEnrolled) {
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: "Authenticate",
+        });
+        if (result.success) {
+          await loginUser(true);
+          router.replace("/");
+        } else {
+          Toast.show("Login failed.", {
+            duration: Toast.durations.LONG,
+          });
+        }
+      }
+    }
 
-  //   if (isWalletInitialized && !isLoggedIn) {
-  //     handleAuthentication();
-  //   }
-  // }, []);
+    if (isWalletInitialized && !isLoggedIn) {
+      handleAuthentication();
+    }
+  }, [isWalletInitialized, isLoggedIn]);
 
   if (!isWalletInitialized && !isLoading) {
     return <Redirect href="/onboarding/pin" />;
@@ -98,17 +101,19 @@ export default function Password() {
             autoFocus
           />
         </View>
-        <View
-          marginTop="$6"
-          flexDirection="column"
-          flex={1}
-          gap="$4"
-          marginHorizontal="$12"
-        >
-          <Button variant="outlined" onPress={deleteWallet}>
-            Delete wallet
-          </Button>
-        </View>
+        {__DEV__ && (
+          <View
+            marginTop="$6"
+            flexDirection="column"
+            flex={1}
+            gap="$4"
+            marginHorizontal="$12"
+          >
+            <Button variant="outlined" onPress={deleteWallet}>
+              Delete wallet
+            </Button>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
