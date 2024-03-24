@@ -67,11 +67,11 @@ export const startClient = (
   rawDocument: Uint8Array,
   document: Correctness,
   privateKey: string,
-  name: string
+  name: string,
 ) =>
   new Promise<void>((resolve, reject) => {
     const brokerUrl = `${config.brokerUri}/${encodeURIComponent(
-      config.protocolVersion
+      config.protocolVersion,
     )}`;
     let reportIntervalId: NodeJS.Timeout | null = null;
     client = new WebSocket(brokerUrl);
@@ -117,18 +117,18 @@ export const startClient = (
               const correctnessReport = buildCorrectnessReport(
                 rawDocument,
                 document,
-                privateKey
+                privateKey,
               );
 
               console.log(
                 "Sending Correctness Report",
-                correctnessReport.length
+                correctnessReport.length,
               );
               client?.send(
                 new Uint8Array([
                   OpCodes.CorrectnessReport,
                   ...correctnessReport,
-                ])
+                ]),
               );
 
               reportIntervalId = setTimeout(() => {
@@ -170,7 +170,7 @@ export const startClient = (
 function buildCorrectnessReport(
   rawDocument: Uint8Array,
   document: Correctness,
-  privateKey: string | null
+  privateKey: string | null,
 ) {
   if (!privateKey) {
     throw new Error("No signature to send");
@@ -209,7 +209,7 @@ function buildKoskPayload(data: Uint8Array, privateKey: string) {
   const signature = bls12_381.signShortSignature(
     challenge.Random,
     privateKey,
-    dst
+    dst,
   );
   challenge.Signature = signature;
   return msgpack.encode(challenge);
@@ -223,7 +223,7 @@ function handleBrokerError(data: Uint8Array) {
 
 export function generateSecureRandom() {
   const targetValue = BigInt(
-    "0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001"
+    "0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001",
   );
   let valid = false;
   let array;

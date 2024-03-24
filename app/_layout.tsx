@@ -53,7 +53,7 @@ function RootLayoutNav() {
 
   return (
     <SafeAreaProvider>
-      <TamaguiProvider config={config} defaultTheme={colorScheme as any}>
+      <TamaguiProvider config={config} defaultTheme={colorScheme as string}>
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >

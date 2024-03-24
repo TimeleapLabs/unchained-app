@@ -21,7 +21,7 @@ interface SignaturesContext {
   signatures: Signature[];
   setDocumentForSigning: (
     document: Correctness | null,
-    rawDocument: Uint8Array | null
+    rawDocument: Uint8Array | null,
   ) => void;
   currentDocument: Correctness | null;
   rawDocument: Uint8Array | null;
@@ -90,7 +90,7 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
 
   const setDocumentForSigning = (
     document: Correctness | null,
-    rawDocument: Uint8Array | null
+    rawDocument: Uint8Array | null,
   ) => {
     setCurrentDocument(document);
     setRawDocument(rawDocument);

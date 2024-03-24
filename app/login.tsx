@@ -95,7 +95,7 @@ export default function Password() {
         <Text textAlign="center">
           {name &&
             `Welcome back ${getFirstName(
-              name
+              name,
             )}! Please enter your PIN to continue.`}
         </Text>
         <View marginTop="$4">
