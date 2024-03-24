@@ -10,6 +10,7 @@ export default function Password() {
   const {
     isWalletInitialized,
     isLoggedIn,
+    isLoading,
     loginUser,
     pin,
     setPin,
@@ -64,7 +65,7 @@ export default function Password() {
   //   }
   // }, []);
 
-  if (!isWalletInitialized) {
+  if (!isWalletInitialized && !isLoading) {
     return <Redirect href="/onboarding/pin" />;
   }
 

@@ -2,7 +2,7 @@ import "react-native-get-random-values";
 
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { generateSecureRandom } from "./unchained-client";
+import { generateSecureRandom, getPublicKey } from "./unchained-client";
 
 const PRIVATE_KEY_STORAGE_KEY = "pk";
 const PIN_STORAGE_KEY = "pin";
@@ -39,27 +39,32 @@ const UserContext = createContext<UserContext>({
 
 const UserProvider = ({ children }: WalletProviderProps) => {
   const [privateKey, setPrivateKey] = useState<string | null>(null);
+  const [publicKey, setPublicKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [pin, setPin] = useState<string>("");
 
-  useEffect(() => {
-    const loadWallet = async () => {
-      // await SecureStore.deleteItemAsync(PRIVATE_KEY_STORAGE_KEY);
-      // await SecureStore.deleteItemAsync(PIN_STORAGE_KEY);
-      setIsLoading(true);
-      try {
-        const wallet = await SecureStore.getItemAsync(PRIVATE_KEY_STORAGE_KEY);
-        if (wallet) {
-          setPrivateKey(wallet);
-        }
-      } finally {
-        setIsLoading(false);
+  const loadWallet = async () => {
+    setIsLoading(true);
+    try {
+      const wallet = await SecureStore.getItemAsync(PRIVATE_KEY_STORAGE_KEY);
+      if (wallet) {
+        setPrivateKey(wallet);
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadWallet();
   }, []);
+
+  useEffect(() => {
+    if (privateKey) {
+      setPublicKey(getPublicKey(privateKey));
+    }
+  }, [privateKey]);
 
   const initializeWallet = () => {
     const newPrivateKey = generateSecureRandom();
@@ -89,13 +94,13 @@ const UserProvider = ({ children }: WalletProviderProps) => {
     setPin("");
   };
 
-  const isWalletInitialized = Boolean(privateKey) && !isLoading;
+  const isWalletInitialized = Boolean(privateKey);
 
   return (
     <UserContext.Provider
       value={{
         privateKey,
-        publicKey: null,
+        publicKey,
         isLoggedIn,
         isWalletInitialized,
         initializeWallet,

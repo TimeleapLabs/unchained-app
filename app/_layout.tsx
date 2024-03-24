@@ -11,7 +11,7 @@ import { useColorScheme } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import SignaturesProvider from "../lib/signatures-provider";
-import UserProvider from "../lib/user-provider";
+import UserProvider, { useUser } from "../lib/user-provider";
 import { config } from "../tamagui.config";
 export { ErrorBoundary } from "expo-router";
 
@@ -33,12 +33,13 @@ export default function RootLayout() {
     RubikRegular: require("../assets/fonts/Rubik-Regular.ttf"),
     RubikLight: require("../assets/fonts/Rubik-Light.ttf"),
   });
+  const { isLoading } = useUser();
 
   useEffect(() => {
-    if (fontLoaded || fontError) {
+    if (fontLoaded || (fontError && !isLoading)) {
       SplashScreen.hideAsync();
     }
-  }, [fontLoaded, fontError]);
+  }, [fontLoaded, fontError, isLoading]);
 
   if (!fontLoaded && !fontError) {
     return null;

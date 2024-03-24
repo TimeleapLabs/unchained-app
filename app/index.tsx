@@ -5,7 +5,7 @@ import { useSignatures } from "../lib/signatures-provider";
 import { useUser } from "../lib/user-provider";
 
 export default function HomeScreen() {
-  const { isWalletInitialized, isLoggedIn } = useUser();
+  const { isWalletInitialized, isLoggedIn, isLoading } = useUser();
   const { bottom } = useSafeAreaInsets();
   const { signatures } = useSignatures();
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function HomeScreen() {
     router.push(`/signature/${topic}`);
   };
 
-  if (!isWalletInitialized) {
+  if (!isWalletInitialized && !isLoading) {
     return <Redirect href="/onboarding/pin" />;
   }
 
