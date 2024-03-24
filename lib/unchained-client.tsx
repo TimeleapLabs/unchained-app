@@ -60,7 +60,7 @@ export interface Reject {
   error?: Error;
 }
 
-const REPORT_TIMEOUT = 5000;
+const REPORT_TIMEOUT = 30000;
 let client: WebSocket | null = null;
 
 export const startClient = (
@@ -130,12 +130,12 @@ export const startClient = (
                 ])
               );
 
-              // reportIntervalId = setTimeout(() => {
-              //   client?.close();
-              //   reject({
-              //     reason: RejectReasons.Timeout,
-              //   });
-              // }, REPORT_TIMEOUT);
+              reportIntervalId = setTimeout(() => {
+                client?.close();
+                reject({
+                  reason: RejectReasons.Timeout,
+                });
+              }, REPORT_TIMEOUT);
               break;
             }
             case Feedbacks.ConfOk:
@@ -246,4 +246,11 @@ export function generateSecureRandom() {
 
 export function toHex(buffer: Uint8Array) {
   return Buffer.from(buffer).toString("hex");
+}
+
+export function getPublicKey(privateKey: string | null) {
+  if (!privateKey) {
+    return null;
+  }
+  return toHex(bls12_381.getPublicKeyForShortSignatures(privateKey));
 }

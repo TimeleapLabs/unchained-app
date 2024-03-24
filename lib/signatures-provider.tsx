@@ -2,7 +2,7 @@ import "react-native-get-random-values";
 
 import { gql, useQuery } from "@apollo/client";
 import React, { createContext, useContext, useEffect } from "react";
-import { Correctness, startClient } from "./unchained-client";
+import { Correctness, getPublicKey, startClient } from "./unchained-client";
 import { useUser } from "./user-provider";
 
 interface SignaturesProviderProps {
@@ -39,8 +39,8 @@ const SignaturesContext = createContext<SignaturesContext>({
 });
 
 const GET_CORRECTNESS = gql`
-  query CorrectnessReports {
-    correctnessReports {
+  query CorrectnessReports($publicKey: String!) {
+    correctnessReports(where: { hasSignersWith: { key: $publicKey } }) {
       edges {
         node {
           topic
@@ -76,8 +76,14 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
     React.useState<Correctness | null>(null);
   const [rawDocument, setRawDocument] = React.useState<Uint8Array | null>(null);
   const { isLoggedIn, privateKey } = useUser();
-  const { loading, error, data, refetch } =
-    useQuery<CorrectnessReport>(GET_CORRECTNESS);
+  const { loading, error, data, refetch } = useQuery<CorrectnessReport>(
+    GET_CORRECTNESS,
+    {
+      variables: {
+        publicKey: getPublicKey(privateKey),
+      },
+    }
+  );
 
   useEffect(() => {
     if (data) {

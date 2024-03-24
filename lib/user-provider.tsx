@@ -1,7 +1,7 @@
 import "react-native-get-random-values";
 
 import * as SecureStore from "expo-secure-store";
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { generateSecureRandom } from "./unchained-client";
 
 const PRIVATE_KEY_STORAGE_KEY = "pk";
@@ -38,10 +38,10 @@ const UserContext = createContext<UserContext>({
 });
 
 const UserProvider = ({ children }: WalletProviderProps) => {
-  const [privateKey, setPrivateKey] = React.useState<string | null>(null);
-  const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const [isLoggedIn, setIsLoggedIn] = React.useState<boolean>(false);
-  const [pin, setPin] = React.useState<string>("");
+  const [privateKey, setPrivateKey] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [pin, setPin] = useState<string>("");
 
   useEffect(() => {
     const loadWallet = async () => {
