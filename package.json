@@ -1,13 +1,13 @@
 {
-  "name": "sworn-app",
+  "name": "unchained-app",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
     "upgrade:tamagui": "yarn up '*tamagui*'@latest '@tamagui/*'@latest",
     "upgrade:tamagui:canary": "yarn up '*tamagui*'@canary '@tamagui/*'@canary",
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "test": "jest --watchAll",
     "lint": "eslint . --ext .ts,.tsx"
   },
