@@ -1,38 +1,51 @@
 import { Link, Redirect } from "expo-router";
-import { Button, Label, Text, View } from "tamagui";
+import { Button, H2, Input, ScrollView, YStack } from "tamagui";
+import FormField from "../../components/FormField";
 import PinInput from "../../components/PinInput";
 import { useUser } from "../../lib/user-provider";
 
 export default function CreateWallet() {
-  const { isWalletInitialized, setPin, pin } = useUser();
+  const { isWalletInitialized, setPin, pin, setName, name } = useUser();
 
   if (isWalletInitialized) {
     return <Redirect href="/login" />;
   }
 
   return (
-    <View padding="$4">
-      <Text marginTop="$4" textAlign="center">
-        {"First, let's define a PIN for your account."}
-      </Text>
+    <ScrollView>
+      <YStack gap="$8" padding="$4">
+        <H2 size="$3" textAlign="center" marginBottom="$2">
+          {"First, let's define a PIN for your account."}
+        </H2>
 
-      <View marginTop="$4">
-        <Label htmlFor="new-pin" size="$6" textAlign="center">
-          Your PIN
-        </Label>
-        <PinInput value={pin} onChangeText={setPin} id="new-pin" autoFocus />
-      </View>
+        <FormField htmlFor="name" label="Your name">
+          <Input
+            value={name}
+            onChangeText={setName}
+            id="name"
+            textAlign="center"
+            size="$6"
+            fontSize={24}
+            borderWidth={2}
+            borderColor="$gray5"
+            focusStyle={{ borderColor: "$blue8" }}
+          />
+        </FormField>
 
-      <Link href="/onboarding/confirm-pin" asChild>
-        <Button
-          marginTop="$4"
-          disabled={pin.length < 6}
-          backgroundColor="$red8"
-          opacity={pin.length < 6 ? 0.5 : 1}
-        >
-          Continue
-        </Button>
-      </Link>
-    </View>
+        <FormField htmlFor="new-pin" label="Your PIN">
+          <PinInput value={pin} onChangeText={setPin} id="new-pin" />
+        </FormField>
+
+        <Link href="/onboarding/confirm-pin" asChild>
+          <Button
+            disabled={pin.length < 6 || !name}
+            backgroundColor="$red8"
+            opacity={pin.length < 6 ? 0.5 : 1}
+          >
+            Continue
+          </Button>
+        </Link>
+      </YStack>
+    </ScrollView>
   );
 }

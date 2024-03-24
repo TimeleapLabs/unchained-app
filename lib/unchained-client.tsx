@@ -66,7 +66,8 @@ let client: WebSocket | null = null;
 export const startClient = (
   rawDocument: Uint8Array,
   document: Correctness,
-  privateKey: string
+  privateKey: string,
+  name: string
 ) =>
   new Promise<void>((resolve, reject) => {
     const brokerUrl = `${config.brokerUri}/${encodeURIComponent(
@@ -79,7 +80,7 @@ export const startClient = (
     client.onopen = () => {
       console.log("WebSocket Client Connected");
       console.log("Sending Hello");
-      const helloPayload = buildHelloPayload(privateKey);
+      const helloPayload = buildHelloPayload(privateKey, name);
       client?.send(new Uint8Array([OpCodes.Hello, ...helloPayload]));
     };
 
@@ -185,12 +186,12 @@ function buildCorrectnessReport(
   return msgpack.encode(correctness);
 }
 
-function buildHelloPayload(privateKey: string): Uint8Array {
+function buildHelloPayload(privateKey: string, name: string): Uint8Array {
   const publicKey = bls12_381.getPublicKeyForShortSignatures(privateKey);
   const shortPublicKey = bls12_381.getPublicKey(privateKey);
 
   const hello: Signer = {
-    Name: "ClientName",
+    Name: name.replace(" ", "_"),
     EvmWallet: "0x...",
     PublicKey: publicKey,
     ShortPublicKey: shortPublicKey,

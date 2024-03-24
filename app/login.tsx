@@ -7,6 +7,11 @@ import { Button, Image, Label, ScrollView, Text, View } from "tamagui";
 import PinInput from "../components/PinInput";
 import { useUser } from "../lib/user-provider";
 
+function getFirstName(name: string) {
+  const firstName = name.split(" ")[0];
+  return firstName;
+}
+
 export default function Password() {
   const [invalidPin, setInvalidPin] = useState(false);
   const {
@@ -17,6 +22,7 @@ export default function Password() {
     pin,
     setPin,
     deleteWallet,
+    name,
   } = useUser();
   const pathname = usePathname();
   const router = useRouter();
@@ -87,7 +93,10 @@ export default function Password() {
           marginVertical="$10"
         />
         <Text textAlign="center">
-          Welcome to SWØRN! Please enter your PIN to continue.
+          {name &&
+            `Welcome back ${getFirstName(
+              name
+            )}! Please enter your PIN to continue.`}
         </Text>
         <View marginTop="$4">
           <Label htmlFor="login-pin" textAlign="center">

@@ -75,15 +75,12 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
   const [currentDocument, setCurrentDocument] =
     React.useState<Correctness | null>(null);
   const [rawDocument, setRawDocument] = React.useState<Uint8Array | null>(null);
-  const { isLoggedIn, privateKey, publicKey } = useUser();
-  const { loading, error, data, refetch } = useQuery<CorrectnessReport>(
-    GET_CORRECTNESS,
-    {
-      variables: {
-        publicKey,
-      },
-    }
-  );
+  const { name, privateKey, publicKey } = useUser();
+  const { data, refetch } = useQuery<CorrectnessReport>(GET_CORRECTNESS, {
+    variables: {
+      publicKey,
+    },
+  });
 
   useEffect(() => {
     if (data) {
@@ -100,9 +97,8 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
   };
 
   const signCurrentDocument = async () => {
-    console.log("Signing document", currentDocument, privateKey);
     if (rawDocument && currentDocument && privateKey) {
-      await startClient(rawDocument, currentDocument, privateKey);
+      await startClient(rawDocument, currentDocument, privateKey, name);
       await refetch();
     }
   };

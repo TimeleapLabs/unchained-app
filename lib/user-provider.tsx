@@ -6,6 +6,7 @@ import { generateSecureRandom, getPublicKey } from "./unchained-client";
 
 const PRIVATE_KEY_STORAGE_KEY = "pk";
 const PIN_STORAGE_KEY = "pin";
+const NAME_STORAGE_KEY = "name";
 
 interface WalletProviderProps {
   children: React.ReactNode;
@@ -22,6 +23,8 @@ interface UserContext {
   pin: string;
   deleteWallet: () => Promise<void>;
   isLoading: boolean;
+  name: string;
+  setName: (name: string) => void;
 }
 
 const UserContext = createContext<UserContext>({
@@ -35,6 +38,8 @@ const UserContext = createContext<UserContext>({
   pin: "",
   deleteWallet: () => Promise.resolve(),
   isLoading: true,
+  name: "",
+  setName: () => {},
 });
 
 const UserProvider = ({ children }: WalletProviderProps) => {
@@ -43,11 +48,16 @@ const UserProvider = ({ children }: WalletProviderProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [pin, setPin] = useState<string>("");
+  const [name, setName] = useState<string>("");
 
   const loadWallet = async () => {
     setIsLoading(true);
     try {
+      const storedName = await SecureStore.getItemAsync(NAME_STORAGE_KEY);
       const wallet = await SecureStore.getItemAsync(PRIVATE_KEY_STORAGE_KEY);
+      if (storedName) {
+        setName(storedName);
+      }
       if (wallet) {
         setPrivateKey(wallet);
       }
@@ -70,13 +80,19 @@ const UserProvider = ({ children }: WalletProviderProps) => {
     const newPrivateKey = generateSecureRandom();
     SecureStore.setItem(PRIVATE_KEY_STORAGE_KEY, newPrivateKey);
     SecureStore.setItem(PIN_STORAGE_KEY, pin);
+    SecureStore.setItem(NAME_STORAGE_KEY, name);
     setPrivateKey(newPrivateKey);
   };
 
   const loginUser = async (biometrics = false) => {
+    if (biometrics) {
+      setIsLoggedIn(true);
+      return;
+    }
+
     const savedPin = await SecureStore.getItemAsync(PIN_STORAGE_KEY);
     if (savedPin) {
-      const isValidPin = savedPin === pin || biometrics;
+      const isValidPin = savedPin === pin;
 
       if (isValidPin) {
         setIsLoggedIn(true);
@@ -112,6 +128,8 @@ const UserProvider = ({ children }: WalletProviderProps) => {
         pin,
         deleteWallet,
         isLoading,
+        name,
+        setName,
       }}
     >
       {children}

@@ -1,6 +1,7 @@
 import { Redirect, useRouter } from "expo-router";
 import { useState } from "react";
-import { Button, Label, Text, View } from "tamagui";
+import { Button, H2, YStack } from "tamagui";
+import FormField from "../../components/FormField";
 import PinInput from "../../components/PinInput";
 import { useUser } from "../../lib/user-provider";
 
@@ -30,15 +31,12 @@ export default function ConfirmPin() {
   };
 
   return (
-    <View padding="$4">
-      <Text marginTop="$4" textAlign="center">
-        {"Confirm you PIN."}
-      </Text>
+    <YStack padding="$4" gap="$8">
+      <H2 size="$3" textAlign="center" marginBottom="$2">
+        Confirm your PIN
+      </H2>
 
-      <View marginTop="$4">
-        <Label htmlFor="confirm-pin" size="$6" textAlign="center">
-          Your PIN confirmation
-        </Label>
+      <FormField htmlFor="confirm-pin" label="Your PIN confirmation">
         <PinInput
           value={pinConfirm}
           onChangeText={setPinConfirm}
@@ -47,7 +45,7 @@ export default function ConfirmPin() {
           autoFocus
           loading={loading}
         />
-      </View>
+      </FormField>
 
       <Button
         marginTop="$4"
@@ -58,6 +56,6 @@ export default function ConfirmPin() {
       >
         Continue
       </Button>
-    </View>
+    </YStack>
   );
 }
