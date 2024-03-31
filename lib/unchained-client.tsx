@@ -1,38 +1,38 @@
 import { bls12_381 } from "@noble/curves/bls12-381";
-import msgpack from "@ygoe/msgpack";
+import base64 from "base64-js";
 import { Buffer } from "buffer";
 import * as crypto from "expo-crypto";
+import { Sia } from "sializer";
 import { TextDecoder } from "text-encoding";
 
-const config = {
-  brokerUri: "wss://shinobi.brokers.kenshi.io",
-  // brokerUri: "ws://192.168.1.59:4444",
-  protocolVersion: "0.11.17",
-};
-
 interface Signer {
-  Name: string;
-  EvmWallet: string;
-  PublicKey: Uint8Array;
-  ShortPublicKey: Uint8Array;
+  name: string;
+  evmWallet: string;
+  publicKey: Uint8Array;
+  shortPublicKey: Uint8Array;
 }
 
 interface Challenge {
-  Passed: boolean;
-  Random: Uint8Array;
-  Signature: Uint8Array;
+  passed: boolean;
+  random: Uint8Array;
+  signature: Uint8Array;
 }
 
 export interface Correctness {
-  Timestamp: number;
-  Hash: Uint8Array;
-  Topic: Uint8Array;
-  Correct: boolean;
+  timestamp: number;
+  hash: Uint8Array;
+  topic: Uint8Array;
+  correct: boolean;
+}
+
+export interface QrData {
+  data: Correctness;
+  url: string;
 }
 
 interface CorrectnessReport {
-  Correctness: Correctness;
-  Signature: Uint8Array;
+  correctness: Correctness;
+  signature: Uint8Array;
 }
 
 enum OpCodes {
@@ -48,11 +48,13 @@ enum Feedbacks {
   KoskOk = "kosk.ok",
   ConfOk = "conf.ok",
   SignatureAccepted = "signature.accepted",
+  SignatureInvalid = "signature.invalid",
 }
 
 export enum RejectReasons {
   Timeout = "timeout",
   Error = "error",
+  InvalidSignature = "invalid_signature",
 }
 
 export interface Reject {
@@ -64,28 +66,24 @@ const REPORT_TIMEOUT = 30000;
 let client: WebSocket | null = null;
 
 export const startClient = (
-  rawDocument: Uint8Array,
   document: Correctness,
   privateKey: string,
   name: string,
+  brokerUrl: string,
 ) =>
   new Promise<void>((resolve, reject) => {
-    const brokerUrl = `${config.brokerUri}/${encodeURIComponent(
-      config.protocolVersion,
-    )}`;
     let reportIntervalId: NodeJS.Timeout | null = null;
     client = new WebSocket(brokerUrl);
     client.binaryType = "arraybuffer";
 
     client.onopen = () => {
-      console.log("WebSocket Client Connected");
-      console.log("Sending Hello");
+      console.log("Sending hello");
       const helloPayload = buildHelloPayload(privateKey, name);
       client?.send(new Uint8Array([OpCodes.Hello, ...helloPayload]));
     };
 
     client.onclose = () => {
-      console.log("WebSocket Client Closed");
+      console.info("WebSocket Client Closed");
     };
 
     client.onerror = (error) => {
@@ -99,7 +97,6 @@ export const startClient = (
       const payload = new Uint8Array(e.data);
       const opcode = payload[0];
       const data = payload.slice(1);
-      console.log("Received message", opcode);
 
       switch (opcode) {
         case OpCodes.Error: {
@@ -109,25 +106,26 @@ export const startClient = (
         }
         case OpCodes.Feedback: {
           const response = new TextDecoder().decode(data);
-          console.log("Broker feedback:", response);
 
           switch (response) {
             case Feedbacks.KoskOk: {
-              console.log("Kosk OK");
+              console.log("Sending correctness report");
               const correctnessReport = buildCorrectnessReport(
-                rawDocument,
                 document,
                 privateKey,
               );
 
-              console.log(
-                "Sending Correctness Report",
-                correctnessReport.length,
-              );
+              const correctnessPayload = new Sia()
+                .addUInt64(correctnessReport.correctness.timestamp)
+                .addByteArray8(correctnessReport.correctness.hash)
+                .addByteArray8(correctnessReport.correctness.topic)
+                .addBool(correctnessReport.correctness.correct)
+                .addByteArray8(correctnessReport.signature).content;
+
               client?.send(
                 new Uint8Array([
                   OpCodes.CorrectnessReport,
-                  ...correctnessReport,
+                  ...correctnessPayload,
                 ]),
               );
 
@@ -140,13 +138,18 @@ export const startClient = (
               break;
             }
             case Feedbacks.ConfOk:
-              console.log("Confirmation OK", response);
               break;
             case Feedbacks.SignatureAccepted:
-              console.log("Signature accepted", response);
               reportIntervalId && clearInterval(reportIntervalId);
               client?.close();
               resolve();
+              break;
+            case Feedbacks.SignatureInvalid:
+              reportIntervalId && clearInterval(reportIntervalId);
+              client?.close();
+              reject({
+                reason: RejectReasons.InvalidSignature,
+              });
               break;
             default:
               console.error("Unknown broker feedback:", response);
@@ -155,10 +158,13 @@ export const startClient = (
           break;
         }
         case OpCodes.KoskChallenge: {
-          console.log("Received Kosk Challenge");
+          console.log("Sending kosk challenge");
           const koskPayload = buildKoskPayload(data, privateKey);
-          console.log("Sending Kosk Result", koskPayload.length);
-          client?.send(new Uint8Array([OpCodes.KoskResult, ...koskPayload]));
+          const payload = new Sia()
+            .addBool(false)
+            .addByteArray8(koskPayload.random)
+            .addByteArray8(koskPayload.signature).content;
+          client?.send(new Uint8Array([OpCodes.KoskResult, ...payload]));
           break;
         }
         default:
@@ -168,7 +174,6 @@ export const startClient = (
   });
 
 function buildCorrectnessReport(
-  rawDocument: Uint8Array,
   document: Correctness,
   privateKey: string | null,
 ) {
@@ -176,14 +181,18 @@ function buildCorrectnessReport(
     throw new Error("No signature to send");
   }
   const dst = { DST: "UNCHAINED" };
-  console.log("Signing correctness", rawDocument.length, privateKey);
-  const signature = bls12_381.signShortSignature(rawDocument, privateKey, dst);
-  const correctness: CorrectnessReport = {
-    Correctness: document,
-    Signature: signature,
-  };
 
-  return msgpack.encode(correctness);
+  const rawDocument = new Sia()
+    .addUInt64(document.timestamp)
+    .addByteArray8(document.hash)
+    .addByteArray8(document.topic)
+    .addBool(document.correct).content;
+  const signature = bls12_381.signShortSignature(rawDocument, privateKey, dst);
+
+  return {
+    correctness: document,
+    signature,
+  } as CorrectnessReport;
 }
 
 function buildHelloPayload(privateKey: string, name: string): Uint8Array {
@@ -191,28 +200,35 @@ function buildHelloPayload(privateKey: string, name: string): Uint8Array {
   const shortPublicKey = bls12_381.getPublicKey(privateKey);
 
   const hello: Signer = {
-    Name: name.replace(" ", "_"),
-    EvmWallet: "0x...",
-    PublicKey: publicKey,
-    ShortPublicKey: shortPublicKey,
+    name: name.replace(" ", "_"),
+    evmWallet: "0x...",
+    publicKey,
+    shortPublicKey,
   };
 
-  return msgpack.encode(hello);
+  return new Sia()
+    .addString8(hello.name)
+    .addString8(hello.evmWallet)
+    .addByteArray8(hello.publicKey)
+    .addByteArray8(hello.shortPublicKey).content;
 }
 
 function buildKoskPayload(data: Uint8Array, privateKey: string) {
-  const challenge: Challenge = msgpack.decode(data) as Challenge;
+  const sia = new Sia().setContent(data);
+  const challenge: Challenge = {
+    passed: sia.readBool(),
+    random: sia.readByteArray8(),
+    signature: sia.readByteArray8(),
+  };
 
-  console.log("Received challenge");
   const dst = { DST: "UNCHAINED" };
-  console.log("Signing challenge", privateKey);
   const signature = bls12_381.signShortSignature(
-    challenge.Random,
+    challenge.random,
     privateKey,
     dst,
   );
-  challenge.Signature = signature;
-  return msgpack.encode(challenge);
+  challenge.signature = signature;
+  return challenge;
 }
 
 function handleBrokerError(data: Uint8Array) {
@@ -254,4 +270,19 @@ export function getPublicKey(privateKey: string | null) {
     return null;
   }
   return toHex(bls12_381.getPublicKeyForShortSignatures(privateKey));
+}
+
+export function base64ToQrData(data: string): QrData {
+  const dataArray = base64.toByteArray(data);
+  const sia = new Sia().setContent(dataArray);
+
+  return {
+    data: {
+      timestamp: sia.readUInt64(),
+      hash: sia.readByteArray8(),
+      topic: sia.readByteArray8(),
+      correct: sia.readBool(),
+    },
+    url: sia.readString8(),
+  };
 }

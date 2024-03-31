@@ -1,18 +1,17 @@
-import msgpack from "@ygoe/msgpack";
-import base64 from "base64-js";
 import { Camera, CameraView } from "expo-camera/next";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions } from "react-native";
 import { Text, View } from "tamagui";
 import { useSignatures } from "../lib/signatures-provider";
-import { Correctness } from "../lib/unchained-client";
+import { Correctness, base64ToQrData } from "../lib/unchained-client";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 export default function ScanScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const { setDocumentForSigning, currentDocument } = useSignatures();
+  const { setDocumentForSigning, currentDocument, setBrokerUrl } =
+    useSignatures();
   const router = useRouter();
 
   useEffect(() => {
@@ -22,13 +21,13 @@ export default function ScanScreen() {
     };
 
     getCameraPermissions();
-    setDocumentForSigning(null, null);
+    setDocumentForSigning(null);
   }, []);
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
-    const dataArray = base64.toByteArray(data);
-    const document = msgpack.decode(dataArray) as Correctness;
-    setDocumentForSigning(document, dataArray);
+    const { url: Url, data: Data } = base64ToQrData(data);
+    setDocumentForSigning(Data as Correctness);
+    setBrokerUrl(Url);
     router.replace("/signing");
   };
 

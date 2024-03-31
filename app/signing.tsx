@@ -32,6 +32,9 @@ export default function SigningScreen() {
         case RejectReasons.Error:
           setError(rejection.error?.message ?? "Unknown error");
           break;
+        case RejectReasons.InvalidSignature:
+          setError("Invalid signature");
+          break;
         default:
           setError("Unknown error");
       }
@@ -51,12 +54,12 @@ export default function SigningScreen() {
           <H2 size="$3" marginBottom="$2" fontFamily="$subHeading">
             Do you want to sign this document?
           </H2>
-          <InlineField label="Topic" text={toHex(currentDocument.Topic)} />
-          <InlineField label="Hash" text={toHex(currentDocument.Hash)} />
-          <InlineField label="Ts" text={String(currentDocument.Timestamp)} />
+          <InlineField label="Topic" text={toHex(currentDocument.topic)} />
+          <InlineField label="Hash" text={toHex(currentDocument.hash)} />
+          <InlineField label="Ts" text={String(currentDocument.timestamp)} />
           <InlineField
             label="Match"
-            text={currentDocument.Correct ? "Yes" : "No"}
+            text={currentDocument.correct ? "Yes" : "No"}
           />
           <XStack gap="$4" width="100%" marginTop="$4">
             <Button
@@ -85,9 +88,14 @@ export default function SigningScreen() {
               Cancel
             </Button>
           </XStack>
-          <View height="$2" marginTop="$4">
+          <View height="$2" marginTop="$4" width="100%">
             {error && (
-              <Text fontSize="$2" color="$red10">
+              <Text
+                fontSize="$2"
+                color="$red10"
+                numberOfLines={3}
+                textOverflow="initial"
+              >
                 Error: {error}
               </Text>
             )}
