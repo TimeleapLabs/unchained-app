@@ -15,6 +15,7 @@ interface Signature {
   correct: boolean;
   timestamp: string;
   id: string;
+  signerscount: number;
 }
 
 interface SignaturesContext {
@@ -24,6 +25,7 @@ interface SignaturesContext {
   getSignature: (id: string) => Signature | undefined;
   setBrokerUrl: (url: string) => void;
   signCurrentDocument: () => Promise<void>;
+  refetchSignatures: () => Promise<void>;
   setDocumentForSigning: (document: Correctness | null) => void;
 }
 
@@ -34,6 +36,7 @@ const SignaturesContext = createContext<SignaturesContext>({
   getSignature: () => undefined,
   setBrokerUrl: () => {},
   setDocumentForSigning: () => {},
+  refetchSignatures: () => Promise.resolve(),
   signCurrentDocument: () => Promise.resolve(),
 });
 
@@ -47,6 +50,7 @@ const GET_CORRECTNESS = gql`
           hash
           timestamp
           id
+          signerscount
         }
       }
     }
@@ -99,7 +103,11 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
   };
 
   const getSignature = (id: string) => {
-    return signatures.find((signature) => signature.id === id);
+    return signatures.find((signature: Signature) => signature.id === id);
+  };
+
+  const refetchSignatures = async () => {
+    await refetch();
   };
 
   return (
@@ -109,6 +117,7 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
         currentDocument,
         signatures,
         getSignature,
+        refetchSignatures,
         setBrokerUrl,
         setDocumentForSigning,
         signCurrentDocument,

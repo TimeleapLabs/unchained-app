@@ -13,7 +13,7 @@ export default function PinInput({
   value,
   error,
   onChangeText,
-  id = "pin",
+  id,
   autoFocus,
   loading = false,
 }: PinInputProps) {

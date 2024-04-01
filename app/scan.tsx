@@ -2,7 +2,7 @@ import { Camera, CameraView } from "expo-camera/next";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Dimensions } from "react-native";
-import { Text, View } from "tamagui";
+import { Text, View, XStack } from "tamagui";
 import { useSignatures } from "../lib/signatures-provider";
 import { Correctness, base64ToQrData } from "../lib/unchained-client";
 
@@ -32,10 +32,23 @@ export default function ScanScreen() {
   };
 
   if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
+    return (
+      <>
+        <XStack gap="$2" margin="$4">
+          <Text>Requesting camera permissions</Text>
+        </XStack>
+      </>
+    );
   }
+
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return (
+      <>
+        <XStack gap="$2" margin="$4">
+          <Text>No access to camera</Text>
+        </XStack>
+      </>
+    );
   }
 
   return (

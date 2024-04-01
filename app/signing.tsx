@@ -56,7 +56,10 @@ export default function SigningScreen() {
           </H2>
           <InlineField label="Topic" text={toHex(currentDocument.topic)} />
           <InlineField label="Hash" text={toHex(currentDocument.hash)} />
-          <InlineField label="Ts" text={String(currentDocument.timestamp)} />
+          <InlineField
+            label="Date"
+            text={new Date(currentDocument.timestamp * 1000).toLocaleString()}
+          />
           <InlineField
             label="Match"
             text={currentDocument.correct ? "Yes" : "No"}

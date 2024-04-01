@@ -14,7 +14,7 @@ const qrData = {
   // url: "ws://192.168.1.59:4444/0.11.17",
   url: "https://shinobi.brokers.kenshi.io/0.11.21",
   data: {
-    timestamp: 1633324583,
+    timestamp: Math.floor(Date.now() / 1000),
     hash: getRandom64(),
     topic: hexToUint8Array(
       "1ce3d8f55311bf6fe438a273bb0b91bc923c81fc6c1547829b1c26029a8edc3afaa602c6cbf57abf09ab6d2b1750e7bc32aaddab5b0a65fc1f1d97d6cb76de15",
