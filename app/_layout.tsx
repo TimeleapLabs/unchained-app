@@ -7,7 +7,6 @@ import {
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
-import { useColorScheme } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import SignaturesProvider from "../lib/signatures-provider";
@@ -49,14 +48,12 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
   return (
-    <SafeAreaProvider>
-      <TamaguiProvider config={config} defaultTheme={colorScheme as string}>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
+    <SafeAreaProvider
+      style={{ backgroundColor: config.themes.dark.background.val }}
+    >
+      <TamaguiProvider config={config} defaultTheme={"dark"}>
+        <ThemeProvider value={DarkTheme}>
           <ApolloProvider client={client}>
             <UserProvider>
               <SignaturesProvider>

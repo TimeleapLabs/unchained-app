@@ -15,27 +15,29 @@ interface Signature {
   correct: boolean;
   timestamp: string;
   id: string;
+  signerscount: number;
 }
 
 interface SignaturesContext {
-  signatures: Signature[];
-  setDocumentForSigning: (
-    document: Correctness | null,
-    rawDocument: Uint8Array | null,
-  ) => void;
+  brokerUrl: string | null;
   currentDocument: Correctness | null;
-  rawDocument: Uint8Array | null;
-  signCurrentDocument: () => Promise<void>;
+  signatures: Signature[];
   getSignature: (id: string) => Signature | undefined;
+  setBrokerUrl: (url: string) => void;
+  signCurrentDocument: () => Promise<void>;
+  refetchSignatures: () => Promise<void>;
+  setDocumentForSigning: (document: Correctness | null) => void;
 }
 
 const SignaturesContext = createContext<SignaturesContext>({
-  signatures: [],
-  setDocumentForSigning: () => {},
+  brokerUrl: null,
   currentDocument: null,
-  rawDocument: null,
-  signCurrentDocument: () => Promise.resolve(),
+  signatures: [],
   getSignature: () => undefined,
+  setBrokerUrl: () => {},
+  setDocumentForSigning: () => {},
+  refetchSignatures: () => Promise.resolve(),
+  signCurrentDocument: () => Promise.resolve(),
 });
 
 const GET_CORRECTNESS = gql`
@@ -48,6 +50,7 @@ const GET_CORRECTNESS = gql`
           hash
           timestamp
           id
+          signerscount
         }
       }
     }
@@ -74,7 +77,7 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
   const [signatures, setSignatures] = React.useState<Signature[]>([]);
   const [currentDocument, setCurrentDocument] =
     React.useState<Correctness | null>(null);
-  const [rawDocument, setRawDocument] = React.useState<Uint8Array | null>(null);
+  const [brokerUrl, setBrokerUrl] = React.useState<string | null>(null);
   const { name, privateKey, publicKey } = useUser();
   const { data, refetch } = useQuery<CorrectnessReport>(GET_CORRECTNESS, {
     variables: {
@@ -88,34 +91,36 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
     }
   }, [data]);
 
-  const setDocumentForSigning = (
-    document: Correctness | null,
-    rawDocument: Uint8Array | null,
-  ) => {
+  const setDocumentForSigning = (document: Correctness | null) => {
     setCurrentDocument(document);
-    setRawDocument(rawDocument);
   };
 
   const signCurrentDocument = async () => {
-    if (rawDocument && currentDocument && privateKey) {
-      await startClient(rawDocument, currentDocument, privateKey, name);
+    if (currentDocument && privateKey && name && brokerUrl) {
+      await startClient(currentDocument, privateKey, name, brokerUrl);
       await refetch();
     }
   };
 
   const getSignature = (id: string) => {
-    return signatures.find((signature) => signature.id === id);
+    return signatures.find((signature: Signature) => signature.id === id);
+  };
+
+  const refetchSignatures = async () => {
+    await refetch();
   };
 
   return (
     <SignaturesContext.Provider
       value={{
-        signatures,
-        setDocumentForSigning,
+        brokerUrl,
         currentDocument,
-        rawDocument,
-        signCurrentDocument,
+        signatures,
         getSignature,
+        refetchSignatures,
+        setBrokerUrl,
+        setDocumentForSigning,
+        signCurrentDocument,
       }}
     >
       {children}
