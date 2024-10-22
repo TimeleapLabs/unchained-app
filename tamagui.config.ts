@@ -68,6 +68,12 @@ export const config = createTamagui({
     bodySecondary: rubikLightFont,
   },
   tokens,
+  themes: {
+    dark: {
+      ...baseConfig.themes.dark,
+      accentColor: tokens.color.white,
+    },
+  },
 });
 
 export default config;
