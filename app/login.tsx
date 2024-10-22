@@ -119,7 +119,7 @@ export default function Password() {
             marginHorizontal="$12"
           >
             <Button variant="outlined" onPress={deleteWallet}>
-              Delete wallet
+              Delete Identity
             </Button>
           </View>
         )}

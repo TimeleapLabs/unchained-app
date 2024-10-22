@@ -97,9 +97,7 @@ export default function HomeScreen() {
                   icon={<ClipboardSignature size={24} />}
                 >
                   <Text fontSize="$1" color="$gray10">
-                    {new Date(
-                      parseInt(signature.timestamp) * 1000,
-                    ).toLocaleString()}
+                    {new Date(signature.timestamp).toLocaleString()}
                   </Text>
                   <Text fontSize="$1" color="$gray10">
                     Signed by: {signature.signerscount}

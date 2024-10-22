@@ -24,6 +24,7 @@ export default function SigningScreen() {
         router.replace("/");
       }, 3000);
     } catch (error) {
+      console.error(error);
       const rejection = error as Reject;
       switch (rejection.reason) {
         case RejectReasons.Timeout:

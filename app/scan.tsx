@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Dimensions } from "react-native";
 import { Text, View, XStack } from "tamagui";
 import { useSignatures } from "../lib/signatures-provider";
-import { Correctness, base64ToQrData } from "../lib/unchained-client";
+import { Attestation, base64ToQrData } from "../lib/unchained-client";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -26,7 +26,7 @@ export default function ScanScreen() {
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     const { url: Url, data: Data } = base64ToQrData(data);
-    setDocumentForSigning(Data as Correctness);
+    setDocumentForSigning(Data as Attestation);
     setBrokerUrl(Url);
     router.replace("/signing");
   };

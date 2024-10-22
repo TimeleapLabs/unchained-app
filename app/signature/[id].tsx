@@ -19,9 +19,7 @@ export default function SignatureScreen() {
           <InlineField label="Hash" text={signature.hash} />
           <InlineField
             label="Date"
-            text={new Date(
-              parseInt(signature.timestamp) * 1000,
-            ).toLocaleString()}
+            text={new Date(signature.timestamp).toLocaleString()}
           />
           <InlineField label="Match" text={signature.correct ? "Yes" : "No"} />
         </YStack>

@@ -11,8 +11,8 @@ const hexToUint8Array = (hex) => {
 };
 
 const qrData = {
-  // url: "ws://192.168.1.59:4444/0.11.17",
-  url: "https://shinobi.brokers.kenshi.io/0.11.21",
+  url: "ws://192.168.1.145:9123/0.13.0",
+  //url: "https://shinobi.brokers.kenshi.io/0.11.21",
   data: {
     timestamp: Math.floor(Date.now() / 1000),
     hash: getRandom64(),

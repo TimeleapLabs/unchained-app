@@ -1,8 +1,7 @@
 import "react-native-get-random-values";
 
-import { gql, useQuery } from "@apollo/client";
 import React, { createContext, useContext, useEffect } from "react";
-import { Correctness, startClient } from "./unchained-client";
+import { Attestation, startClient } from "./unchained-client";
 import { useUser } from "./user-provider";
 
 interface SignaturesProviderProps {
@@ -20,13 +19,13 @@ interface Signature {
 
 interface SignaturesContext {
   brokerUrl: string | null;
-  currentDocument: Correctness | null;
+  currentDocument: Attestation | null;
   signatures: Signature[];
   getSignature: (id: string) => Signature | undefined;
   setBrokerUrl: (url: string) => void;
   signCurrentDocument: () => Promise<void>;
   refetchSignatures: () => Promise<void>;
-  setDocumentForSigning: (document: Correctness | null) => void;
+  setDocumentForSigning: (document: Attestation | null) => void;
 }
 
 const SignaturesContext = createContext<SignaturesContext>({
@@ -40,65 +39,66 @@ const SignaturesContext = createContext<SignaturesContext>({
   signCurrentDocument: () => Promise.resolve(),
 });
 
-const GET_CORRECTNESS = gql`
-  query CorrectnessReports($publicKey: String!) {
-    correctnessReports(where: { hasSignersWith: { key: $publicKey } }) {
-      edges {
-        node {
-          topic
-          correct
-          hash
-          timestamp
-          id
-          signerscount
-        }
-      }
-    }
-  }
-`;
-
-interface Edge {
-  node: {
-    topic: string;
-    hash: string;
-    correct: boolean;
-    timestamp: string;
-    id: string;
-  };
+interface Data {
+  consensus: boolean;
+  correct: boolean;
+  hash: string;
+  signature: string;
+  signers_count: number;
+  timestamp: number;
+  topic: string;
+  voted: number;
 }
 
-interface CorrectnessReport {
-  correctnessReports: {
-    edges: Edge[];
-  };
+interface MongoAttestation {
+  _id: string;
+  hash: string;
+  topic: string;
+  data: Data;
+  timestamp: string;
 }
+
+const EXPLORER_URL = "https://unchained.timeleap.dev";
+const SIGNATURES_URL = `${EXPLORER_URL}/api/unchained/user`;
 
 const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
   const [signatures, setSignatures] = React.useState<Signature[]>([]);
   const [currentDocument, setCurrentDocument] =
-    React.useState<Correctness | null>(null);
+    React.useState<Attestation | null>(null);
   const [brokerUrl, setBrokerUrl] = React.useState<string | null>(null);
   const { name, privateKey, publicKey } = useUser();
-  const { data, refetch } = useQuery<CorrectnessReport>(GET_CORRECTNESS, {
-    variables: {
-      publicKey,
-    },
-  });
+
+  // use fetch to get the signatures
+  const fetchSignatures = async () => {
+    if (publicKey) {
+      const response = await fetch(`${SIGNATURES_URL}/${publicKey}`);
+      const data = (await response.json()) as MongoAttestation[];
+
+      setSignatures(
+        data.map((attestation) => ({
+          topic: attestation.topic,
+          hash: attestation.hash,
+          correct: attestation.data.correct,
+          timestamp: attestation.timestamp,
+          id: attestation._id,
+          signerscount: attestation.data.signers_count,
+        })),
+      );
+    }
+  };
 
   useEffect(() => {
-    if (data) {
-      setSignatures(data.correctnessReports.edges.map((edge) => edge.node));
-    }
-  }, [data]);
+    fetchSignatures();
+  }, [publicKey]);
 
-  const setDocumentForSigning = (document: Correctness | null) => {
+  const setDocumentForSigning = (document: Attestation | null) => {
     setCurrentDocument(document);
   };
 
   const signCurrentDocument = async () => {
     if (currentDocument && privateKey && name && brokerUrl) {
       await startClient(currentDocument, privateKey, name, brokerUrl);
-      await refetch();
+      // await refetch();
     }
   };
 
@@ -107,7 +107,7 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
   };
 
   const refetchSignatures = async () => {
-    await refetch();
+    await fetchSignatures();
   };
 
   return (

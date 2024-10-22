@@ -66,8 +66,8 @@
     "qrcode-terminal": "^0.12.0"
   },
   "private": true,
-  "packageManager": "npm@10.5.0",
   "optionalDependencies": {
     "lightningcss-darwin-arm64": "^1.24.1"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha256.c17d3797fb9a9115bf375e31bfd30058cac6bc9c3b8807a3d8cb2094794b51ca"
 }

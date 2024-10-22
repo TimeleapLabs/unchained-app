@@ -18,7 +18,7 @@ interface Challenge {
   signature: Uint8Array;
 }
 
-export interface Correctness {
+export interface Attestation {
   timestamp: number;
   hash: Uint8Array;
   topic: Uint8Array;
@@ -26,12 +26,12 @@ export interface Correctness {
 }
 
 export interface QrData {
-  data: Correctness;
+  data: Attestation;
   url: string;
 }
 
-interface CorrectnessReport {
-  correctness: Correctness;
+interface AttestationReport {
+  attestation: Attestation;
   signature: Uint8Array;
 }
 
@@ -41,7 +41,7 @@ enum OpCodes {
   KoskResult = 2,
   Feedback = 4,
   Error = 5,
-  CorrectnessReport = 10,
+  Attestation = 6,
 }
 
 enum Feedbacks {
@@ -66,7 +66,7 @@ const REPORT_TIMEOUT = 30000;
 let client: WebSocket | null = null;
 
 export const startClient = (
-  document: Correctness,
+  document: Attestation,
   privateKey: string,
   name: string,
   brokerUrl: string,
@@ -109,24 +109,18 @@ export const startClient = (
 
           switch (response) {
             case Feedbacks.KoskOk: {
-              console.log("Sending correctness report");
-              const correctnessReport = buildCorrectnessReport(
-                document,
-                privateKey,
-              );
+              console.log("Sending attestation");
+              const attestationReport = buildAttestation(document, privateKey);
 
-              const correctnessPayload = new Sia()
-                .addUInt64(correctnessReport.correctness.timestamp)
-                .addByteArray8(correctnessReport.correctness.hash)
-                .addByteArray8(correctnessReport.correctness.topic)
-                .addBool(correctnessReport.correctness.correct)
-                .addByteArray8(correctnessReport.signature).content;
+              const attestationPayload = new Sia()
+                .addUInt64(attestationReport.attestation.timestamp)
+                .addByteArray8(attestationReport.attestation.hash)
+                .addByteArray8(attestationReport.attestation.topic)
+                .addBool(attestationReport.attestation.correct)
+                .addByteArray8(attestationReport.signature).content;
 
               client?.send(
-                new Uint8Array([
-                  OpCodes.CorrectnessReport,
-                  ...correctnessPayload,
-                ]),
+                new Uint8Array([OpCodes.Attestation, ...attestationPayload]),
               );
 
               reportIntervalId = setTimeout(() => {
@@ -173,10 +167,7 @@ export const startClient = (
     };
   });
 
-function buildCorrectnessReport(
-  document: Correctness,
-  privateKey: string | null,
-) {
+function buildAttestation(document: Attestation, privateKey: string | null) {
   if (!privateKey) {
     throw new Error("No signature to send");
   }
@@ -187,12 +178,15 @@ function buildCorrectnessReport(
     .addByteArray8(document.hash)
     .addByteArray8(document.topic)
     .addBool(document.correct).content;
+
+  console.log(Buffer.from(rawDocument).toString("hex"));
+  console.log(Buffer.from(document.topic).toString("hex"));
   const signature = bls12_381.signShortSignature(rawDocument, privateKey, dst);
 
   return {
-    correctness: document,
+    attestation: document,
     signature,
-  } as CorrectnessReport;
+  } as AttestationReport;
 }
 
 function buildHelloPayload(privateKey: string, name: string): Uint8Array {
