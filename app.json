@@ -19,7 +19,7 @@
       "infoPlist": {
         "NSFaceIDUsageDescription": "Allow $(PRODUCT_NAME) to use Face ID."
       },
-      "bundleIdentifier": "io.kenshi.unchained.app"
+      "bundleIdentifier": "swiss.timeleap.unchained"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +33,7 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "io.kenshi.unchained.app"
+      "package": "swiss.timeleap.unchained"
     },
     "plugins": [
       "expo-router",

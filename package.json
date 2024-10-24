@@ -9,7 +9,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "test": "jest --watchAll",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "eas-build-pre-install": "corepack enable"
   },
   "jest": {
     "preset": "jest-expo"
