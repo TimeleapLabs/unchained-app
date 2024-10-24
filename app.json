@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Unchained Client",
+    "name": "Unchained ID",
     "slug": "unchained-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,13 +12,8 @@
       "resizeMode": "contain",
       "backgroundColor": "#111111"
     },
-    "platforms": [
-      "ios",
-      "android"
-    ],
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "platforms": ["ios", "android"],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -82,7 +77,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "dec53cf1-6a2e-408c-b5f5-1bdcead0c6ce"
+        "projectId": "6cf8e643-d050-4573-a232-3a50ef8f7b77"
       }
     }
   }

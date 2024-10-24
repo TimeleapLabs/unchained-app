@@ -1,4 +1,20 @@
 {
+  "cli": {
+    "version": ">= 0.34.0"
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      },
+      "ios": {
+        "appleId": "andrey@timeleap.swiss",
+        "ascAppId": "6737232479",
+        "appleTeamId": "GR6G4D65LM"
+      }
+    }
+  },
   "build": {
     "preview": {
       "prebuildCommand": "prebuild --npm",
