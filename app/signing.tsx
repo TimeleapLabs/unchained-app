@@ -63,7 +63,7 @@ export default function SigningScreen() {
           />
           <InlineField
             label="Match"
-            text={currentDocument.correct ? "Yes" : "No"}
+            text={currentDocument.meta.correct ? "Yes" : "No"}
           />
           <XStack gap="$4" width="100%" marginTop="$4">
             <Button

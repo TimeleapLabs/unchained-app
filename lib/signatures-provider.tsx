@@ -41,13 +41,15 @@ const SignaturesContext = createContext<SignaturesContext>({
 
 interface Data {
   consensus: boolean;
-  correct: boolean;
   hash: string;
   signature: string;
   signers_count: number;
   timestamp: number;
   topic: string;
   voted: number;
+  meta: {
+    correct: boolean;
+  };
 }
 
 interface MongoAttestation {
@@ -78,7 +80,7 @@ const SignaturesProvider = ({ children }: SignaturesProviderProps) => {
         data.map((attestation) => ({
           topic: attestation.topic,
           hash: attestation.hash,
-          correct: attestation.data.correct,
+          correct: attestation.data.meta.correct,
           timestamp: attestation.timestamp,
           id: attestation._id,
           signerscount: attestation.data.signers_count,

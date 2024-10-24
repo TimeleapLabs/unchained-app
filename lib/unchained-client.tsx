@@ -22,7 +22,7 @@ export interface Attestation {
   timestamp: number;
   hash: Uint8Array;
   topic: Uint8Array;
-  correct: boolean;
+  meta: { correct: boolean };
 }
 
 export interface QrData {
@@ -116,7 +116,13 @@ export const startClient = (
                 .addUInt64(attestationReport.attestation.timestamp)
                 .addByteArray8(attestationReport.attestation.hash)
                 .addByteArray8(attestationReport.attestation.topic)
-                .addBool(attestationReport.attestation.correct)
+                .addByteArray32(
+                  new Uint8Array(
+                    Buffer.from(
+                      JSON.stringify({ correct: document.meta.correct }),
+                    ),
+                  ),
+                )
                 .addByteArray8(attestationReport.signature).content;
 
               client?.send(
@@ -177,7 +183,11 @@ function buildAttestation(document: Attestation, privateKey: string | null) {
     .addUInt64(document.timestamp)
     .addByteArray8(document.hash)
     .addByteArray8(document.topic)
-    .addBool(document.correct).content;
+    .addByteArray32(
+      new Uint8Array(
+        Buffer.from(JSON.stringify({ correct: document.meta.correct })),
+      ),
+    ).content;
 
   console.log(Buffer.from(rawDocument).toString("hex"));
   console.log(Buffer.from(document.topic).toString("hex"));
@@ -275,7 +285,7 @@ export function base64ToQrData(data: string): QrData {
       timestamp: sia.readUInt64(),
       hash: sia.readByteArray8(),
       topic: sia.readByteArray8(),
-      correct: sia.readBool(),
+      meta: JSON.parse(Buffer.from(sia.readByteArray32()).toString()),
     },
     url: sia.readString8(),
   };

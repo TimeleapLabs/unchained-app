@@ -27,7 +27,13 @@ const correctnessPayload = new Sia()
   .addUInt64(qrData.data.timestamp)
   .addByteArray8(qrData.data.hash)
   .addByteArray8(qrData.data.topic)
-  .addBool(qrData.data.correct)
+  .addByteArray32(
+    Buffer.from(
+      JSON.stringify({
+        correct: qrData.data.correct,
+      }),
+    ),
+  )
   .addString8(qrData.url).content;
 
 const qrCode = base64.fromByteArray(correctnessPayload);
