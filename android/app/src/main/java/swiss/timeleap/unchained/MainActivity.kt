@@ -1,4 +1,4 @@
-package io.kenshi.unchained.app
+package swiss.timeleap.unchained
 
 import android.os.Build
 import android.os.Bundle

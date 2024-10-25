@@ -28,7 +28,7 @@
 				<key>CFBundleURLSchemes</key>
 				<array>
 					<string>myapp</string>
-					<string>io.kenshi.unchained.app</string>
+					<string>swiss.timeleap.unchained</string>
 				</array>
 			</dict>
 		</array>
