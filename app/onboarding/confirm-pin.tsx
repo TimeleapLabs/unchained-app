@@ -1,6 +1,6 @@
 import { Redirect, useRouter } from "expo-router";
 import { useState } from "react";
-import { Button, H2, YStack } from "tamagui";
+import { Button, H2, Text, YStack } from "tamagui";
 import FormField from "../../components/FormField";
 import PinInput from "../../components/PinInput";
 import { useUser } from "../../lib/user-provider";
@@ -45,17 +45,29 @@ export default function ConfirmPin() {
           autoFocus
           loading={loading}
         />
+        {pinConfirm.length < 6 && (
+          <Text color="$gray11" fontSize="$2" marginTop="$4">
+            Your pin confirmation needs to be 6 characters long.
+          </Text>
+        )}
+        {pinConfirm.length === 6 && !isPinSame && (
+          <Text color="$red11" fontSize="$2" marginTop="$4">
+            Your pin confirmation does not match.
+          </Text>
+        )}
       </FormField>
 
-      <Button
-        marginTop="$4"
-        disabled={isInvalid || loading}
-        backgroundColor="$red8"
-        opacity={isInvalid ? 0.5 : 1}
-        onPress={handleConfirm}
-      >
-        Continue
-      </Button>
+      {pinConfirm.length === 6 && isPinSame && (
+        <Button
+          marginTop="$4"
+          disabled={isInvalid || loading}
+          backgroundColor="$green8"
+          opacity={isInvalid ? 0.5 : 1}
+          onPress={handleConfirm}
+        >
+          Continue
+        </Button>
+      )}
     </YStack>
   );
 }

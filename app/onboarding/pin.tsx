@@ -1,5 +1,5 @@
 import { Link, Redirect } from "expo-router";
-import { Button, H2, Input, ScrollView, YStack } from "tamagui";
+import { Button, H2, Input, ScrollView, Text, YStack } from "tamagui";
 import FormField from "../../components/FormField";
 import PinInput from "../../components/PinInput";
 import { useUser } from "../../lib/user-provider";
@@ -34,17 +34,25 @@ export default function CreateWallet() {
 
         <FormField htmlFor="new-pin" label="Your PIN">
           <PinInput value={pin} onChangeText={setPin} id="new-pin" />
+          {pin.length < 6 && (
+            <Text color="$gray11" fontSize="$2" marginTop="$4">
+              Your pin needs to be 6 characters long.
+            </Text>
+          )}
         </FormField>
 
-        <Link href="/onboarding/confirm-pin" asChild>
-          <Button
-            disabled={pin.length < 6 || !name}
-            backgroundColor="$red8"
-            opacity={pin.length < 6 ? 0.5 : 1}
-          >
-            Continue
-          </Button>
-        </Link>
+        {pin.length === 6 && (
+          <Link href="/onboarding/confirm-pin" asChild>
+            <Button
+              disabled={pin.length < 6 || !name}
+              backgroundColor="$green8"
+              fontSize="$2"
+              opacity={pin.length < 6 ? 0.5 : 1}
+            >
+              Continue
+            </Button>
+          </Link>
+        )}
       </YStack>
     </ScrollView>
   );
